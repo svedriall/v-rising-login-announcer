@@ -1,5 +1,5 @@
 
-Add below lines to your **ServerHostSettings.json** file
+Add below lines to your **ServerHostSettings.json** file to enable RCON for your server
 
 **ServerHostSettings.json**
 ```json
