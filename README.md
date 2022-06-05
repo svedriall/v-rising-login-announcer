@@ -1,3 +1,5 @@
+You should run the script from a venv created inside your "logs" folder. If your log file name is different, you should adjust the code accordingly.
+
 
 Add below lines to your **ServerHostSettings.json** file to enable RCON for your server
 
