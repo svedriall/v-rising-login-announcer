@@ -53,7 +53,7 @@ if __name__ == '__main__':
                 if userSteamID not in userlist :
                     userlist[userSteamID] = characterName
                        
-                announcement = "["+ current_time + "] " + characterName + " oyuna baglandi."
+                announcement = "["+ current_time + "] " + characterName + " ."
                 print(announcement)
                 if discordToggle:
                     sendDiscordMessage(announcement)
@@ -62,8 +62,8 @@ if __name__ == '__main__':
             if "EndAuthSession " in line:
                 logoutUserLine = line.split(":")
                 logoutUserSteamID = re.sub("\D","",logoutUserLine[1].replace(" ",""))
-                print("["+ current_time + "] " + userlist[userSteamID] + " oyundan cikis yapti.")
-                announcement = "["+ current_time + "] " + userlist[userSteamID] + " oyundan cikis yapti."
+                announcement = "["+ current_time + "] " + userlist[userSteamID] + " disconnected."
+                print(announcement)
                 if discordToggle:
                     sendDiscordMessage(announcement)
                 if logoutServerAnnounceToggle:
