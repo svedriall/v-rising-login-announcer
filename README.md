@@ -12,3 +12,5 @@ Add below lines to your **ServerHostSettings.json** file to enable RCON for your
 }
 ```
 You can grab the  WebhookURL of your Discord server's channel by creating an integration for it.
+
+Warning: In case you are not very familiar with coding and the environments, this script can only run hosts that can be accessed via remote desktop or SSH because you'll need to manually install python and some dependencies. 
