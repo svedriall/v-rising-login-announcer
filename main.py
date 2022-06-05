@@ -1,4 +1,3 @@
-from collections import UserList
 import time
 from datetime import datetime as dt
 from rcon.source import Client
