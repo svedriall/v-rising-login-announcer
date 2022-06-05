@@ -6,13 +6,21 @@ from discord import Webhook, RequestsWebhookAdapter
 import re
 
 userlist = {}
+discordToggle = True # Should it send discord messages?
+loginServerAnnounceToggle = True # Should it send server messages for login?
+logoutServerAnnounceToggle = True #Should it send server messages for logout?
+
+debugFollow = False # Should it debug & log every line?
+
+now = dt.now()
+current_time = now.strftime("%H:%M - %d.%m.%Y")  
 
 def sendDiscordMessage(message):
     webhook = Webhook.from_url("your-url", adapter=RequestsWebhookAdapter())
     webhook.send(message)
 
 def sendServerCommand(message):
-    with Client('127.0.0.1', YourRconPort, passwd="yourRconPassword") as client:
+    with Client('127.0.0.1', YourRconPort, passwd="YourRconPassword") as client:
         time.sleep(10)
         response = client.run('announce '+ message)
     print(response)
@@ -30,35 +38,35 @@ if __name__ == '__main__':
     logfile = open("..\VRisingServer.log","r")
     loglines = follow(logfile)
     for line in loglines:
-        # print(line)
-        if "User " in line and "Character:" in line:
-            userLine = line.split(",")
-            print(userLine)
-            characterNameString = userLine[2].split("'")
-            characterName = characterNameString[1]
+        if debugFollow:
+            print(current_time + "-" + line)
+        try:
+            if "User " in line and "Character:" in line:
+                userLine = line.split(",")
+                characterNameString = userLine[2].split("'")
+                characterName = characterNameString[1]
 
-            steamIDString = userLine[0]
-            userSteamIDString = steamIDString.split("'")
-            userSteamID = userSteamIDString[3]
+                steamIDString = userLine[0]
+                userSteamIDString = steamIDString.split("'")
+                userSteamID = userSteamIDString[3]
 
-            #print(userSteamID)
-            #print("SteamID: " + userSteamID)
-            userInfo = (userSteamID, characterName)
-
-            if userSteamID not in userlist :
-                userlist[userSteamID] = characterName
-
-            now = dt.now()
-            current_time = now.strftime("%H:%M - %d.%m.%Y")           
-            # print(userLine)
-            announcement = "["+ current_time + "] " + characterName + " logged in."
-            print(announcement)
-            sendDiscordMessage(announcement)
-            #sendServerCommand(announcement)
-        if "EndAuthSession " in line:
-            logoutUserLine = line.split(":")
-            logoutUserSteamID = re.sub("\D","",logoutUserLine[1].replace(" ",""))
-            print("["+ current_time + "] " + userlist[userSteamID] + " oyundan cikis yapti.")
-            announcement = "["+ current_time + "] " + userlist[userSteamID] + " logged out."
-            sendDiscordMessage(announcement)
-
+                if userSteamID not in userlist :
+                    userlist[userSteamID] = characterName
+                       
+                announcement = "["+ current_time + "] " + characterName + " oyuna baglandi."
+                print(announcement)
+                if discordToggle:
+                    sendDiscordMessage(announcement)
+                if loginServerAnnounceToggle:
+                    sendServerCommand(announcement)
+            if "EndAuthSession " in line:
+                logoutUserLine = line.split(":")
+                logoutUserSteamID = re.sub("\D","",logoutUserLine[1].replace(" ",""))
+                print("["+ current_time + "] " + userlist[userSteamID] + " oyundan cikis yapti.")
+                announcement = "["+ current_time + "] " + userlist[userSteamID] + " oyundan cikis yapti."
+                if discordToggle:
+                    sendDiscordMessage(announcement)
+                if logoutServerAnnounceToggle:
+                    sendServerCommand(announcement)
+        except:
+            print("an exception occured on line: " + line)
