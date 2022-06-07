@@ -41,7 +41,7 @@ if __name__ == '__main__':
         if debugFollow:
             print(current_time + "-" + line)
         try:
-            if "User " in line and "Character:" in line:
+            if "connected as" in line:
                 userLine = line.split(",")
                 characterNameString = userLine[2].split("'")
                 characterName = characterNameString[1]
@@ -52,14 +52,15 @@ if __name__ == '__main__':
 
                 if userSteamID not in userlist :
                     userlist[userSteamID] = characterName
-                       
-                announcement = "["+ current_time + "] " + characterName + " ."
+
+                # print(userLine)
+                announcement = "["+ current_time + "] " + characterName + " oyuna baglandi."
                 print(announcement)
                 if discordToggle:
                     sendDiscordMessage(announcement)
                 if loginServerAnnounceToggle:
                     sendServerCommand(announcement)
-            if "EndAuthSession " in line:
+            if "SteamPlatformSystem - EndAuthSession" in line:
                 logoutUserLine = line.split(":")
                 logoutUserSteamID = re.sub("\D","",logoutUserLine[1].replace(" ",""))
                 announcement = "["+ current_time + "] " + userlist[userSteamID] + " disconnected."
