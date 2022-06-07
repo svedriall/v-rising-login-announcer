@@ -54,7 +54,7 @@ if __name__ == '__main__':
                     userlist[userSteamID] = characterName
 
                 # print(userLine)
-                announcement = "["+ current_time + "] " + characterName + " oyuna baglandi."
+                announcement = "["+ current_time + "] " + characterName + " connected."
                 print(announcement)
                 if discordToggle:
                     sendDiscordMessage(announcement)
