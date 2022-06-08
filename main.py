@@ -1,32 +1,82 @@
 import time
 from datetime import datetime as dt
 from rcon.source import Client
-import requests
 from discord import Webhook, RequestsWebhookAdapter
 import re
+import json
+import os
 
-userlist = {}
-discordToggle = True # Should it send discord messages?
-loginServerAnnounceToggle = True # Should it send server messages for login?
-logoutServerAnnounceToggle = True #Should it send server messages for logout?
+discordToggle = True  # Shousld it send discord messages?
+loginServerAnnounceToggle = True  # Should it send server messages for login?
+logoutServerAnnounceToggle = True  # Should it send server messages for logout?
 
-debugFollow = False # Should it debug & log every line?
+debugFollow = False  # Should it debug & log every line?
+filename = "users.json"
 
-now = dt.now()
-current_time = now.strftime("%H:%M - %d.%m.%Y")  
+RCONIP = "127.0.0.1"
+RCONPort = 25575
+RCONPassword = "YourPasswordHere"
+
+DiscordWebHookURL = "YourURLHere"
+connectedMessageAffix = " connected."
+disconnectedMessageAffix = " disconnected."
+
+logfileDir = "..\VRisingServer.log"
+
+def getCurrentTime():
+    now = dt.now()
+    current_time = now.strftime("%H:%M:%S - %d.%m.%Y")
+    return current_time
+
+
+def firstTimeCheck():
+    def where_json(file_name):
+        return os.path.exists(file_name)
+
+    if where_json("users.json"):
+        pass
+    else:
+        data = {"DummyUserID": "DummyName"}
+
+        with open("users.json", "w") as outfile:
+            json.dump(data, outfile)
+
+
+def checkUser(checkedUserSteamID, checkEedUserCharacterName):
+    with open(filename, "r") as f:
+        userlist = json.load(f)
+        if userSteamID not in userlist:
+            userlist[
+                checkedUserSteamID
+            ] = checkEedUserCharacterName  # <--- add `id` value.
+        else:
+            print("user exists")
+
+    os.remove(filename)
+    with open(filename, "w") as f:
+        json.dump(userlist, f, indent=4)
+
+    return userlist
+
 
 def sendDiscordMessage(message):
-    webhook = Webhook.from_url("your-url", adapter=RequestsWebhookAdapter())
+    webhook = Webhook.from_url(
+        DiscordWebHookURL,
+        adapter=RequestsWebhookAdapter(),
+    )
     webhook.send(message)
 
+
 def sendServerCommand(message):
-    with Client('127.0.0.1', YourRconPort, passwd="YourRconPassword") as client:
-        time.sleep(10)
-        response = client.run('announce '+ message)
-    print(response)
+    with Client(RCONIP, RCONPort, passwd=RCONPassword) as client:
+        time.sleep(1)
+        response = client.run("announce " + message)
+        test = client.run("help")
+    print(test, response)
+
 
 def follow(thefile):
-    thefile.seek(0,2)
+    thefile.seek(0, 2)
     while True:
         line = thefile.readline()
         if not line:
@@ -34,12 +84,17 @@ def follow(thefile):
             continue
         yield line
 
-if __name__ == '__main__':
-    logfile = open("..\VRisingServer.log","r")
+
+if __name__ == "__main__":
+    logfile = open(logfileDir, "r")
     loglines = follow(logfile)
+
+    sendDiscordMessage("Login Announcer Launched")
+    sendServerCommand("Login Announcer Launched")
+
     for line in loglines:
         if debugFollow:
-            print(current_time + "-" + line)
+            print(getCurrentTime() + "-" + line)
         try:
             if "connected as" in line:
                 userLine = line.split(",")
@@ -50,11 +105,15 @@ if __name__ == '__main__':
                 userSteamIDString = steamIDString.split("'")
                 userSteamID = userSteamIDString[3]
 
-                if userSteamID not in userlist :
-                    userlist[userSteamID] = characterName
+                userData = checkUser(userSteamID, characterName)
 
-                # print(userLine)
-                announcement = "["+ current_time + "] " + characterName + " connected."
+                announcement = (
+                    "["
+                    + getCurrentTime()
+                    + "] "
+                    + characterName
+                    + connectedMessageAffix
+                )
                 print(announcement)
                 if discordToggle:
                     sendDiscordMessage(announcement)
@@ -62,8 +121,16 @@ if __name__ == '__main__':
                     sendServerCommand(announcement)
             if "SteamPlatformSystem - EndAuthSession" in line:
                 logoutUserLine = line.split(":")
-                logoutUserSteamID = re.sub("\D","",logoutUserLine[1].replace(" ",""))
-                announcement = "["+ current_time + "] " + userlist[userSteamID] + " disconnected."
+                logoutUserSteamID = str(
+                    re.sub("\D", "", logoutUserLine[1].replace(" ", ""))
+                )
+                announcement = (
+                    "["
+                    + getCurrentTime()
+                    + "] "
+                    + userData[logoutUserSteamID]
+                    + disconnectedMessageAffix
+                )
                 print(announcement)
                 if discordToggle:
                     sendDiscordMessage(announcement)
