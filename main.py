@@ -51,9 +51,9 @@ def check_user(check_steam_id, check_character_name):
             user_list[check_steam_id] = check_character_name
         else:
             print('invalid user name, probably first login character creation.')
-            user_list[check_steam_id] = "NewPlayer"
+            user_list[check_steam_id] = "New Vampire"
     else:
-        if user_list[check_steam_id] == "NewPlayer":
+        if user_list[check_steam_id] == "New Vampire":
             user_list[check_steam_id] = check_character_name
         else:
             print('user found')
